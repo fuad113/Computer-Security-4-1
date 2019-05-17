@@ -8,6 +8,8 @@ string keybits;
 string key56bits;
 string ciphertext;
 string cipherbits;
+string decipherbits;
+string deciphertext;
 
 int PI [] = {58, 50, 42, 34, 26, 18, 10, 2,
              60, 52, 44, 36, 28, 20, 12, 4,
@@ -84,6 +86,7 @@ string Conversionkeyto56bits(string str)
 
 string Subkeygenerator(int iteration)
 {
+
     string strleft,strright;
     string finalleft,finalright,finalsubkey,subkey48bits;
     string temp1,temp2,temp3,temp4;
@@ -130,13 +133,12 @@ string Subkeygenerator(int iteration)
 }
 
 
-
-
 void Encryption(string str)
 {
     string plaintext,leftold,rightold;
     string rightold48bits,funcxor48bits,funcxor32bits;
     string funcfinal,ekdomfinal;
+
 
     for(int i=0; i<64; i++)
         plaintext.push_back(str[PI[i]-1]);
@@ -148,7 +150,6 @@ void Encryption(string str)
     //right 32 bits stored in rightold
     for(int i=32; i<64; i++)
         rightold.push_back(plaintext[i]);
-
 
     ///16 iterations starts
     for(int iter=0; iter<16; iter++)
@@ -199,6 +200,12 @@ void Encryption(string str)
         leftold=leftnew;
         rightold=rightnew;
 
+        //clearing the temporary strings
+        rightold48bits.clear();
+        funcxor48bits.clear();
+        funcxor32bits.clear();
+        funcfinal.clear();
+
     }
 
     //swapping left and right 32 bits. rightold is the after swapped bit streams
@@ -208,6 +215,7 @@ void Encryption(string str)
         ekdomfinal.push_back(rightold[PI_1[i]-1]);
 
     cipherbits=ekdomfinal;
+    ekdomfinal.clear();
 
     //conversion of cipherbits to cypher string
     for(int i=0; i<cipherbits.length(); i=i+8)
@@ -233,15 +241,125 @@ void Encryption(string str)
 
 }
 
+void Decryption(string str)
+{
+    string plaintext,leftold,rightold;
+    string rightold48bits,funcxor48bits,funcxor32bits;
+    string funcfinal,ekdomfinal;
+
+
+    for(int i=0; i<64; i++)
+        plaintext.push_back(str[PI[i]-1]);
+
+    //left 32 bits stored in leftold
+    for(int i=0; i<32; i++)
+        leftold.push_back(plaintext[i]);
+
+    //right 32 bits stored in rightold
+    for(int i=32; i<64; i++)
+        rightold.push_back(plaintext[i]);
+
+    ///16 iterations starts
+    for(int iter=0; iter<16; iter++)
+    {
+        string leftnew,rightnew;
+
+        //new left 32 bits will be old right 32 bits
+        leftnew=rightold;
+
+        ///working of function
+
+        //converting right old to 48 bits by E array
+
+        for(int i=0; i<48; i++)
+            rightold48bits.push_back(rightold[E[i]-1]);
+
+
+        //XOR of e/right old 32 bits and subkey for this iteration
+
+        string ki=Subkeygenerator(15-iter);
+
+        for(int i=0; i<48; i++)
+        {
+            if(rightold48bits[i]==ki[i])
+                funcxor48bits.push_back('0');
+            else
+                funcxor48bits.push_back('1');
+        }
+
+        // converting the result to 32 bits
+        for(int i=0; i<32; i++)
+            funcxor32bits.push_back(funcxor48bits[PI_2[i]-1]);
+
+        // passing through the P-box
+        for(int i=0; i<32; i++)
+            funcfinal.push_back(funcxor32bits[P[i]-1]);
+
+
+        // XOR of the left old and the output of function which is the right new
+        for(int i=0; i<32; i++)
+        {
+            if(funcfinal[i]==leftold[i])
+                rightnew.push_back('0');
+            else
+                rightnew.push_back('1');
+        }
+
+        leftold=leftnew;
+        rightold=rightnew;
+
+        //clearing the temporary strings
+        rightold48bits.clear();
+        funcxor48bits.clear();
+        funcxor32bits.clear();
+        funcfinal.clear();
+
+    }
+
+    //swapping left and right 32 bits. rightold is the after swapped bit streams
+    rightold+=leftold;
+
+    for(int i=0; i<64; i++)
+        ekdomfinal.push_back(rightold[PI_1[i]-1]);
+
+    decipherbits=ekdomfinal;
+    ekdomfinal.clear();
+
+    //conversion of cipherbits to cypher string
+    for(int i=0; i<decipherbits.length(); i=i+8)
+    {
+        string temp;
+
+        for(int j=i; j<i+8; j++)
+            temp.push_back(decipherbits[j]);
+
+        int power=1;
+        int sum=0;
+
+        for(int k=7; k>=0; k--)
+        {
+            int temp2=temp[k]- '0';
+            sum=sum+temp2*power;
+            power=power*2;
+        }
+
+        deciphertext.push_back((char)sum);
+
+    }
+
+}
+
 
 void Convertobits(string str)
 {
 
     char ch;
-
     for(int i=0; i<str.length(); i+=8)
     {
         string temp;
+
+        string send;
+
         for(int j=i; j<i+8; j++)
         {
 
@@ -253,8 +371,48 @@ void Convertobits(string str)
             }
 
             reverse(temp.begin(), temp.end());
+
+            //===========================
+            send += temp;
+            temp.clear();
+            //============================
         }
-        Encryption(temp);
+
+        Encryption(send);
+    }
+
+}
+
+
+void Convertobitsfordecipher(string str)
+{
+
+    char ch;
+    for(int i=0; i<str.length(); i+=8)
+    {
+        string temp;
+
+        string send;
+
+        for(int j=i; j<i+8; j++)
+        {
+
+            ch=str[j];
+
+            for(int k= 0; k<8; k++)
+            {
+                temp.push_back(((ch >> k)&1)+'0');
+            }
+
+            reverse(temp.begin(), temp.end());
+
+            //===========================
+            send += temp;
+            temp.clear();
+            //============================
+        }
+
+        Decryption(send);
     }
 
 }
@@ -292,6 +450,7 @@ int main()
         keybits+=tempkeybits;
     }
 
+    key56bits = Conversionkeyto56bits(keybits);
 
 
     ///plain converting to bits and call the Encryption
@@ -300,5 +459,10 @@ int main()
     cout<< "Ciphered: " << ciphertext << endl;
 
 
+    ///decyphering of the encripted text
+
+    Convertobitsfordecipher(ciphertext);
+
+    cout<< "Deciphered: "<< deciphertext << endl;
 
 }
