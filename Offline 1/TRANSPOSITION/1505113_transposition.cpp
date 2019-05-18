@@ -2,13 +2,53 @@
 
 using namespace std;
 
+string TranspositionEncryption (string plaintext,vector<int>keyorder)
+{
+    int columnnuber=keyorder.size();
+    int rownumber= plaintext.length()/columnnuber ;
+    string encryptedtext;
+    int mapping[columnnuber];
+
+    for(int i=0;i<plaintext.length();i++)
+        plaintext[i]=toupper(plaintext[i]);
+
+    vector<string> v;
+
+    for(int i=0;i<columnnuber;i++)
+    {
+        string str;
+        for(int j=i ; j< plaintext.length() ; j+=columnnuber)
+        {
+            str.push_back(plaintext[j]);
+        }
+
+        v.push_back(str);
+    }
+
+
+    for(int i=0;i<keyorder.size();i++)
+    {
+        mapping[keyorder[i]]=i;
+    }
+
+    for(int i=0;i<columnnuber;i++)
+    {
+        encryptedtext+= v[mapping[i]];
+    }
+
+     return encryptedtext;
+
+
+}
+
+
 
 int main()
 {
     freopen("transposition-113.txt","r", stdin);
     freopen("output.txt","w",stdout);
 
-    string ciphertext,dummy;
+    string mainciphertext,ciphertext,dummy;
     getline(cin,ciphertext);
     getline(cin,dummy);
 
@@ -16,6 +56,8 @@ int main()
     getline(cin,hints);
 
     vector<string> hintwords;
+
+    mainciphertext=ciphertext;
 
     for(int i=0; i< ciphertext.length(); i++)
         ciphertext[i]=tolower(ciphertext[i]);
@@ -144,5 +186,27 @@ int main()
     {
         cout<< keyordering[i]+1 << " " ;
     }
+
+    cout<< "\n" ;
+
+
+   string encrypt=TranspositionEncryption(plaintext,keyordering);
+   cout<< "Encrypted: " << encrypt << endl;
+
+
+   int matchingcounter=0;
+
+
+   for(int i=0;i<cipherlength;i++)
+   {
+        if(mainciphertext[i]==encrypt[i])
+            matchingcounter++;
+   }
+
+
+   float accuracy= (matchingcounter/cipherlength)*100 ;
+   cout<< "Accuracy Percentage: " << accuracy << "%" << endl ;
+
+
     return 0;
 }
