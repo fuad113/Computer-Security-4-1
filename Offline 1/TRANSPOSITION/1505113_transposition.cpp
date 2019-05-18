@@ -2,6 +2,8 @@
 
 using namespace std;
 
+///function for Transposition Encryption
+
 string TranspositionEncryption (string plaintext,vector<int>keyorder)
 {
     int columnnuber=keyorder.size();
@@ -25,7 +27,7 @@ string TranspositionEncryption (string plaintext,vector<int>keyorder)
         v.push_back(str);
     }
 
-
+    //mapping for key ordering
     for(int i=0;i<keyorder.size();i++)
     {
         mapping[keyorder[i]]=i;
@@ -46,7 +48,7 @@ string TranspositionEncryption (string plaintext,vector<int>keyorder)
 int main()
 {
     freopen("transposition-113.txt","r", stdin);
-    freopen("output.txt","w",stdout);
+    freopen("transposition_output.txt","w",stdout);
 
     string mainciphertext,ciphertext,dummy;
     getline(cin,ciphertext);
@@ -66,7 +68,6 @@ int main()
     hints.erase(remove(hints.begin(),hints.end(),','),hints.end());
 
     //pushing each hint word to a vector of strings
-
     stringstream ss(hints);
     string str;
 
@@ -83,16 +84,17 @@ int main()
     int keysize;
     vector<int> keyordering;
 
-
+    //guessing that the column number maybe between 2 and 10
     for(int colnum=2 ;colnum<=10; colnum++)
     {
 
         if((cipherlength % colnum) != 0)
             continue;
 
+        //row number
         int rownum=cipherlength/colnum;
 
-        //dividing the ciphertext into the chunk of rownum
+        //getting the columns of the given ciphertext
         vector<string> tempvec;
 
         for(int i=0;i< cipherlength ;i+=rownum)
@@ -106,7 +108,7 @@ int main()
         }
 
 
-        //temporary array for before permutation
+        //temporary array before permutation
         int colnumarray[colnum];
 
         for(int i=0;i<colnum;i++)
@@ -132,7 +134,6 @@ int main()
 
 
             //matching with the given hints words
-
             int matchingcounter=0;
 
             for(int i=0;i<hintwords.size();i++)
@@ -148,6 +149,7 @@ int main()
 
             }
 
+            //if all the hint words are found then break
             if(matchingcounter==4)
             {
                 answerfound=true;
@@ -177,9 +179,12 @@ int main()
 
     }
 
-
+    cout<< "Given Ciphertext: " << mainciphertext << endl;
+    cout<< "\n" ;
     cout<< "Plain Text: " << plaintext << endl ;
+    cout<< "\n" ;
     cout<< "Key Length: " << keyordering.size() << endl ;
+    cout<< "\n" ;
     cout<< "Key Order: ";
 
     for(int i=0;i<keysize;i++)
@@ -187,7 +192,7 @@ int main()
         cout<< keyordering[i]+1 << " " ;
     }
 
-    cout<< "\n" ;
+    cout<< "\n\n" ;
 
 
    string encrypt=TranspositionEncryption(plaintext,keyordering);
@@ -203,7 +208,7 @@ int main()
             matchingcounter++;
    }
 
-
+   cout<< "\n" ;
    float accuracy= (matchingcounter/cipherlength)*100 ;
    cout<< "Accuracy Percentage: " << accuracy << "%" << endl ;
 

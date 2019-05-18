@@ -421,8 +421,8 @@ void Convertobitsfordecipher(string str)
 
 int main()
 {
-    freopen("input.txt","r",stdin);
-    freopen("output.txt","w",stdout);
+    freopen("DES_input.txt","r",stdin);
+    freopen("DES_output.txt","w",stdout);
 
     ///input
     getline(cin,key);
